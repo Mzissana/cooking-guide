@@ -265,8 +265,14 @@ a {
   gap: 10px;
   align-items: center;
   overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   padding-bottom: 4px;
   margin-bottom: 14px;
+}
+
+.nav-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-tabs > button {
@@ -535,8 +541,14 @@ a {
 
 .chip-row-scroll {
   overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   padding-bottom: 4px;
   flex-wrap: nowrap;
+}
+
+.chip-row-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .switch {
@@ -1066,6 +1078,16 @@ a {
   align-items: center;
 }
 
+.ingredient-item > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ingredient-item-actions {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
 .ingredient-row.missing {
   border-color: rgba(176, 73, 60, 0.18);
 }
@@ -1410,5 +1432,75 @@ a {
   .shopping-item,
   .detail-actions {
     align-items: flex-start;
+  }
+
+  .ingredient-item {
+    gap: 12px;
+  }
+
+  .ingredient-item-actions {
+    gap: 8px;
+  }
+
+  .page-editor .section-heading {
+    flex-wrap: wrap;
+  }
+
+  .page-editor .ingredient-editor {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .page-editor .ingredient-editor-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .page-editor .toggle-pill-compact {
+    justify-self: start;
+  }
+
+  .page-editor .ingredient-editor > .remove-icon-button {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: end;
+    align-self: start;
+    margin-top: 0;
+  }
+
+  .page-editor .step-editor {
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+  }
+
+  .page-editor .step-index {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  .page-editor .step-editor textarea {
+    grid-column: 1 / -1;
+  }
+
+  .page-editor .step-editor > .remove-icon-button {
+    grid-column: 2;
+    grid-row: 1;
+    margin-left: 0;
+  }
+
+  .page-editor .form-actions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .ingredient-item {
+    flex-direction: column;
+  }
+
+  .ingredient-item-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 }
