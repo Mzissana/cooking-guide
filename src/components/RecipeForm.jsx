@@ -169,6 +169,10 @@ export function RecipeForm({
             <span>Name</span>
             <input
               type="text"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
               value={formState.name}
               onChange={(event) => updateField("name", event.target.value)}
               placeholder="Creamy tomato pasta"
@@ -318,6 +322,10 @@ export function RecipeForm({
                       <span>New ingredient name</span>
                       <input
                         type="text"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="none"
+                        spellCheck={false}
                         value={item.newName}
                         onChange={(event) =>
                           updateIngredientRow(

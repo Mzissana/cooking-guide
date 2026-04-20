@@ -995,6 +995,10 @@ export default function App() {
                 <input
                   ref={ingredientNameInputRef}
                   type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   value={ingredientDraft.name}
                   onChange={(event) =>
                     setIngredientDraft((current) => ({
@@ -1145,6 +1149,10 @@ export default function App() {
                 <span>Name</span>
                 <input
                   type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   value={manualShoppingDraft.name}
                   onChange={(event) =>
                     setManualShoppingDraft((current) => ({
@@ -1218,6 +1226,10 @@ export default function App() {
                     <input
                       ref={categoryNameInputRef}
                       type="text"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="none"
+                      spellCheck={false}
                       value={categoryModal.name}
                       onChange={(event) =>
                         setCategoryModal((current) => ({
