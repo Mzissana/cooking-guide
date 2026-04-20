@@ -163,13 +163,15 @@ export function RecipeForm({
         </button>
       </div>
 
-      <form className="recipe-form" onSubmit={handleSubmit}>
+      <form className="recipe-form" onSubmit={handleSubmit} autoComplete="off">
         <div className="form-grid">
           <label>
             <span>Name</span>
             <input
               type="text"
-              autoComplete="off"
+              name="recipe-name"
+              inputMode="text"
+              autoComplete="new-password"
               autoCorrect="off"
               autoCapitalize="none"
               spellCheck={false}
@@ -322,7 +324,9 @@ export function RecipeForm({
                       <span>New ingredient name</span>
                       <input
                         type="text"
-                        autoComplete="off"
+                        name={`new-ingredient-name-${index}`}
+                        inputMode="text"
+                        autoComplete="new-password"
                         autoCorrect="off"
                         autoCapitalize="none"
                         spellCheck={false}

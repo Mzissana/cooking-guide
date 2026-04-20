@@ -989,13 +989,18 @@ export default function App() {
               </h2>
             </div>
 
-            <form className="recipe-form" onSubmit={handleSaveIngredient}>
+            <form
+              className="recipe-form"
+              onSubmit={handleSaveIngredient}
+              autoComplete="off">
               <label>
                 <span>Name</span>
                 <input
                   ref={ingredientNameInputRef}
                   type="text"
-                  autoComplete="off"
+                  name="ingredient-name"
+                  inputMode="text"
+                  autoComplete="new-password"
                   autoCorrect="off"
                   autoCapitalize="none"
                   spellCheck={false}
@@ -1144,12 +1149,15 @@ export default function App() {
 
             <form
               className="recipe-form"
-              onSubmit={handleAddManualShoppingItem}>
+              onSubmit={handleAddManualShoppingItem}
+              autoComplete="off">
               <label>
                 <span>Name</span>
                 <input
                   type="text"
-                  autoComplete="off"
+                  name="manual-item-name"
+                  inputMode="text"
+                  autoComplete="new-password"
                   autoCorrect="off"
                   autoCapitalize="none"
                   spellCheck={false}
@@ -1220,13 +1228,18 @@ export default function App() {
                   </button>
                 </div>
 
-                <form className="recipe-form" onSubmit={handleSaveCategory}>
+                <form
+                  className="recipe-form"
+                  onSubmit={handleSaveCategory}
+                  autoComplete="off">
                   <label>
                     <span>Name</span>
                     <input
                       ref={categoryNameInputRef}
                       type="text"
-                      autoComplete="off"
+                      name="category-name"
+                      inputMode="text"
+                      autoComplete="new-password"
                       autoCorrect="off"
                       autoCapitalize="none"
                       spellCheck={false}
