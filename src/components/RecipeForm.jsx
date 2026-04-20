@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { ingredientCategories, recipeCategories } from "../data/mockData";
+import {
+  ingredientCategories as defaultIngredientCategories,
+  recipeCategories,
+} from "../data/mockData";
 
 const EMPTY_INGREDIENT = {
   ingredientId: "",
@@ -16,15 +19,14 @@ function getInitialState(recipe) {
     category: recipe?.category ?? "breakfast",
     image: recipe?.image ?? "",
     time: recipe?.time ?? 15,
-    ingredients:
-      recipe?.ingredients.map((item) => ({
-        ingredientId: item.ingredientId,
-        amount: item.amount,
-        optional: item.optional,
-        createNew: false,
-        newName: "",
-        newCategory: "others",
-      })) ?? [{ ...EMPTY_INGREDIENT }],
+    ingredients: recipe?.ingredients.map((item) => ({
+      ingredientId: item.ingredientId,
+      amount: item.amount,
+      optional: item.optional,
+      createNew: false,
+      newName: "",
+      newCategory: "others",
+    })) ?? [{ ...EMPTY_INGREDIENT }],
     steps: recipe?.steps.length ? [...recipe.steps] : [""],
     videoUrl: recipe?.videoUrl ?? "",
     notes: recipe?.notes ?? "",
@@ -32,10 +34,22 @@ function getInitialState(recipe) {
   };
 }
 
-export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
+export function RecipeForm({
+  recipe,
+  ingredients,
+  ingredientCategories,
+  onSubmit,
+  onCancel,
+}) {
   const [formState, setFormState] = useState(() => getInitialState(recipe));
+  const ingredientCategoryOptions = ingredientCategories?.length
+    ? ingredientCategories
+    : defaultIngredientCategories;
   const ingredientOptions = useMemo(
-    () => [...ingredients].sort((left, right) => left.name.localeCompare(right.name)),
+    () =>
+      [...ingredients].sort((left, right) =>
+        left.name.localeCompare(right.name),
+      ),
     [ingredients],
   );
 
@@ -66,7 +80,9 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
   const removeIngredientRow = (index) => {
     setFormState((current) => ({
       ...current,
-      ingredients: current.ingredients.filter((_, itemIndex) => itemIndex !== index),
+      ingredients: current.ingredients.filter(
+        (_, itemIndex) => itemIndex !== index,
+      ),
     }));
   };
 
@@ -77,7 +93,9 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
   const updateStep = (index, value) => {
     setFormState((current) => ({
       ...current,
-      steps: current.steps.map((step, stepIndex) => (stepIndex === index ? value : step)),
+      steps: current.steps.map((step, stepIndex) =>
+        stepIndex === index ? value : step,
+      ),
     }));
   };
 
@@ -116,7 +134,9 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
       }))
       .filter((item) => item.ingredientId || item.newName);
 
-    const cleanedSteps = formState.steps.map((step) => step.trim()).filter(Boolean);
+    const cleanedSteps = formState.steps
+      .map((step) => step.trim())
+      .filter(Boolean);
 
     onSubmit({
       recipe: {
@@ -160,8 +180,7 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
             <span>Category</span>
             <select
               value={formState.category}
-              onChange={(event) => updateField("category", event.target.value)}
-            >
+              onChange={(event) => updateField("category", event.target.value)}>
               {recipeCategories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -222,22 +241,26 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
           type="button"
           className={`toggle-pill ${formState.favorite ? "active" : ""}`}
           aria-pressed={formState.favorite}
-          onClick={() => updateField("favorite", !formState.favorite)}
-        >
+          onClick={() => updateField("favorite", !formState.favorite)}>
           Favorite
         </button>
 
         <div className="form-section">
           <div className="section-heading">
             <h3>Ingredients</h3>
-            <button type="button" className="ghost-button" onClick={addIngredientRow}>
+            <button
+              type="button"
+              className="ghost-button"
+              onClick={addIngredientRow}>
               Add ingredient
             </button>
           </div>
 
           <div className="stack-list">
             {formState.ingredients.map((item, index) => (
-              <div key={`ingredient-row-${index}`} className="ingredient-editor">
+              <div
+                key={`ingredient-row-${index}`}
+                className="ingredient-editor">
                 <div className="ingredient-editor-grid">
                   <label>
                     <span>Ingredient</span>
@@ -245,10 +268,17 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
                       value={item.createNew ? "__new__" : item.ingredientId}
                       onChange={(event) => {
                         const nextValue = event.target.value;
-                        updateIngredientRow(index, "createNew", nextValue === "__new__");
-                        updateIngredientRow(index, "ingredientId", nextValue === "__new__" ? "" : nextValue);
-                      }}
-                    >
+                        updateIngredientRow(
+                          index,
+                          "createNew",
+                          nextValue === "__new__",
+                        );
+                        updateIngredientRow(
+                          index,
+                          "ingredientId",
+                          nextValue === "__new__" ? "" : nextValue,
+                        );
+                      }}>
                       <option value="">Select ingredient</option>
                       {ingredientOptions.map((option) => (
                         <option key={option.id} value={option.id}>
@@ -264,7 +294,9 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
                     <input
                       type="text"
                       value={item.amount}
-                      onChange={(event) => updateIngredientRow(index, "amount", event.target.value)}
+                      onChange={(event) =>
+                        updateIngredientRow(index, "amount", event.target.value)
+                      }
                       placeholder="1 cup"
                     />
                   </label>
@@ -273,8 +305,9 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
                     type="button"
                     className={`toggle-pill toggle-pill-compact ${item.optional ? "active" : ""}`}
                     aria-pressed={item.optional}
-                    onClick={() => updateIngredientRow(index, "optional", !item.optional)}
-                  >
+                    onClick={() =>
+                      updateIngredientRow(index, "optional", !item.optional)
+                    }>
                     Optional
                   </button>
                 </div>
@@ -286,7 +319,13 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
                       <input
                         type="text"
                         value={item.newName}
-                        onChange={(event) => updateIngredientRow(index, "newName", event.target.value)}
+                        onChange={(event) =>
+                          updateIngredientRow(
+                            index,
+                            "newName",
+                            event.target.value,
+                          )
+                        }
                         placeholder="Chickpeas"
                       />
                     </label>
@@ -295,9 +334,14 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
                       <span>Ingredient category</span>
                       <select
                         value={item.newCategory}
-                        onChange={(event) => updateIngredientRow(index, "newCategory", event.target.value)}
-                      >
-                        {ingredientCategories.map((category) => (
+                        onChange={(event) =>
+                          updateIngredientRow(
+                            index,
+                            "newCategory",
+                            event.target.value,
+                          )
+                        }>
+                        {ingredientCategoryOptions.map((category) => (
                           <option key={category} value={category}>
                             {category}
                           </option>
@@ -312,8 +356,7 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
                   className="remove-icon-button"
                   onClick={() => removeIngredientRow(index)}
                   disabled={formState.ingredients.length === 1}
-                  aria-label="Remove ingredient"
-                >
+                  aria-label="Remove ingredient">
                   −
                 </button>
               </div>
@@ -344,8 +387,7 @@ export function RecipeForm({ recipe, ingredients, onSubmit, onCancel }) {
                   className="remove-icon-button"
                   onClick={() => removeStep(index)}
                   disabled={formState.steps.length === 1}
-                  aria-label="Remove step"
-                >
+                  aria-label="Remove step">
                   −
                 </button>
               </div>

@@ -1,4 +1,5 @@
 import { recipeStatusLabels } from "../data/mockData";
+import { IconClock, IconHeart, IconHeartFilled, IconPlate } from "./Icons";
 
 function formatMissingLabel(count) {
   return count === 1 ? "Missing 1 ingredient" : `Missing ${count} ingredients`;
@@ -24,7 +25,7 @@ export function RecipeCard({ recipe, onOpen, onToggleFavorite, simpleMode }) {
     <article className={`recipe-card recipe-row ${simpleMode ? "simple" : ""}`}>
       <button
         type="button"
-        className="favorite-button"
+        className={`favorite-button ${recipe.favorite ? "active" : ""}`}
         onClick={(event) => {
           event.stopPropagation();
           onToggleFavorite(recipe.id);
@@ -32,7 +33,7 @@ export function RecipeCard({ recipe, onOpen, onToggleFavorite, simpleMode }) {
         aria-label={
           recipe.favorite ? "Remove from favorites" : "Add to favorites"
         }>
-        {recipe.favorite ? "♥" : "♡"}
+        {recipe.favorite ? <IconHeartFilled /> : <IconHeart />}
       </button>
 
       <button
@@ -43,7 +44,9 @@ export function RecipeCard({ recipe, onOpen, onToggleFavorite, simpleMode }) {
           {recipe.image ? (
             <img src={recipe.image} alt="" loading="lazy" />
           ) : (
-            <span className="recipe-row-emoji">🍽️</span>
+            <span className="recipe-row-emoji">
+              <IconPlate />
+            </span>
           )}
         </div>
 
@@ -53,7 +56,10 @@ export function RecipeCard({ recipe, onOpen, onToggleFavorite, simpleMode }) {
             <span className={`mini-badge badge-${recipe.availabilityStatus}`}>
               {getRecipeStatusLabel(recipe)}
             </span>
-            <span className="muted">⏱ {recipe.time} min</span>
+            <span className="muted inline-icon">
+              <IconClock />
+              {recipe.time} min
+            </span>
           </p>
         </div>
       </button>

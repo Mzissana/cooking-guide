@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { FilterBar } from "./components/FilterBar";
 import { IngredientItem } from "./components/IngredientItem";
 import { RecipeCard } from "./components/RecipeCard";
@@ -95,6 +96,10 @@ export default function App() {
     "kitchen-compass.filters",
     seedFilters,
   );
+  const [ingredientCategoryList, setIngredientCategoryList] = useLocalStorage(
+    "kitchen-compass.ingredientCategories",
+    ingredientCategories,
+  );
   const [shoppingState, setShoppingState] = useLocalStorage(
     "kitchen-compass.shopping",
     seedShoppingState,
@@ -121,9 +126,63 @@ export default function App() {
     category: "others",
   });
   const [suggestedRecipeId, setSuggestedRecipeId] = useState(null);
+  const [categoryModal, setCategoryModal] = useState({ open: false, name: "" });
 
   const ingredientNameInputRef = useRef(null);
   const ingredientFormPanelRef = useRef(null);
+  const categoryNameInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!categoryModal.open) {
+      return;
+    }
+
+    document.body.classList.add("modal-open");
+    requestAnimationFrame(() => categoryNameInputRef.current?.focus());
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setCategoryModal((current) => ({ ...current, open: false }));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.classList.remove("modal-open");
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [categoryModal.open]);
+
+  const ingredientCategoryOptions = useMemo(() => {
+    const next = [];
+    const seen = new Set();
+    [
+      ...ingredientCategories,
+      ...ingredientCategoryList,
+      ...ingredients.map((ingredient) => ingredient.category),
+      ...shoppingState.manualItems.map((item) => item.category),
+      ...shoppingState.recipeItems.map((item) => item.category),
+    ].forEach((category) => {
+      const normalized = String(category ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+      if (!normalized) {
+        return;
+      }
+      if (seen.has(normalized)) {
+        return;
+      }
+      seen.add(normalized);
+      next.push(normalized);
+    });
+    return next;
+  }, [
+    ingredientCategoryList,
+    ingredients,
+    shoppingState.manualItems,
+    shoppingState.recipeItems,
+  ]);
 
   const ingredientMap = useMemo(
     () =>
@@ -161,7 +220,7 @@ export default function App() {
     }
 
     if (activePage === "details") {
-      return selectedRecipe?.name ?? "Recipe";
+      return "Recipe";
     }
 
     return "Kitchen";
@@ -243,13 +302,13 @@ export default function App() {
 
   const shoppingByCategory = useMemo(
     () =>
-      ingredientCategories.reduce((accumulator, category) => {
+      ingredientCategoryOptions.reduce((accumulator, category) => {
         accumulator[category] = shoppingItems.filter(
           (item) => item.category === category,
         );
         return accumulator;
       }, {}),
-    [shoppingItems],
+    [ingredientCategoryOptions, shoppingItems],
   );
 
   const handleOpenRecipe = (recipeId) => {
@@ -431,6 +490,38 @@ export default function App() {
     setActivePage("details");
   };
 
+  const handleCreateIngredient = ({ name, category }) => {
+    return new Promise((resolve) => {
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        resolve("");
+        return;
+      }
+
+      const normalized = trimmedName.toLowerCase();
+
+      setIngredients((current) => {
+        const existing = current.find(
+          (ingredient) => ingredient.name.trim().toLowerCase() === normalized,
+        );
+        if (existing) {
+          resolve(existing.id);
+          return current;
+        }
+
+        const newIngredient = {
+          id: createId("ingredient"),
+          name: trimmedName,
+          category,
+          status: "need_to_buy",
+        };
+
+        resolve(newIngredient.id);
+        return [...current, newIngredient];
+      });
+    });
+  };
+
   const handleAddMissingToShopping = (recipeId) => {
     const recipe = enrichedRecipes.find((item) => item.id === recipeId);
     if (!recipe) {
@@ -564,6 +655,37 @@ export default function App() {
       });
       ingredientNameInputRef.current?.focus();
     });
+  };
+
+  const openNewCategoryModal = () => {
+    setCategoryModal({ open: true, name: "" });
+  };
+
+  const handleSaveCategory = (event) => {
+    event.preventDefault();
+    const normalized = categoryModal.name
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+    if (!normalized) {
+      return;
+    }
+
+    setIngredientCategoryList((current) => {
+      const existing = new Set(
+        current.map((item) =>
+          String(item ?? "")
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, " "),
+        ),
+      );
+      if (existing.has(normalized)) {
+        return current;
+      }
+      return [...current, normalized];
+    });
+    setCategoryModal({ open: false, name: "" });
   };
 
   const handleToggleShoppingItem = (itemKey) => {
@@ -779,6 +901,7 @@ export default function App() {
           }}
           onDelete={() => handleDeleteRecipe(selectedRecipe.id)}
           onAddMissingToShopping={handleAddMissingToShopping}
+          onCycleIngredientStatus={handleCycleIngredientStatus}
         />
       ) : null}
 
@@ -786,7 +909,9 @@ export default function App() {
         <RecipeForm
           recipe={editingRecipe}
           ingredients={ingredients}
+          ingredientCategories={ingredientCategoryOptions}
           onSubmit={handleSaveRecipe}
+          onCreateIngredient={handleCreateIngredient}
           onCancel={() => {
             setEditingRecipeId(null);
             setActivePage(selectedRecipeId ? "details" : "recipes");
@@ -799,11 +924,18 @@ export default function App() {
           <section className="panel">
             <div className="section-heading">
               <h2>Inventory</h2>
-              <span className="muted">Tap status to cycle</span>
+              <div className="inline-icon">
+                <button
+                  type="button"
+                  className="ghost-button compact"
+                  onClick={openNewCategoryModal}>
+                  New category
+                </button>
+              </div>
             </div>
 
             <div className="inventory-groups">
-              {ingredientCategories.map((category) => {
+              {ingredientCategoryOptions.map((category) => {
                 const items = ingredients.filter(
                   (ingredient) => ingredient.category === category,
                 );
@@ -885,7 +1017,7 @@ export default function App() {
                       category: event.target.value,
                     }))
                   }>
-                  {ingredientCategories.map((category) => (
+                  {ingredientCategoryOptions.map((category) => (
                     <option key={category} value={category}>
                       {category}
                     </option>
@@ -945,7 +1077,7 @@ export default function App() {
             </div>
 
             <div className="inventory-groups">
-              {ingredientCategories.map((category) => (
+              {ingredientCategoryOptions.map((category) => (
                 <details key={category} className="inventory-group">
                   <summary className="inventory-summary">
                     <div className="inventory-summary-title">
@@ -1035,7 +1167,7 @@ export default function App() {
                       category: event.target.value,
                     }))
                   }>
-                  {ingredientCategories.map((category) => (
+                  {ingredientCategoryOptions.map((category) => (
                     <option key={category} value={category}>
                       {category}
                     </option>
@@ -1050,6 +1182,76 @@ export default function App() {
           </section>
         </div>
       ) : null}
+
+      {categoryModal.open
+        ? createPortal(
+            <div
+              className="modal-backdrop"
+              role="presentation"
+              onClick={() =>
+                setCategoryModal((current) => ({ ...current, open: false }))
+              }>
+              <div
+                className="panel modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="category-modal-title"
+                onClick={(event) => event.stopPropagation()}>
+                <div className="modal-header">
+                  <h3 id="category-modal-title">New category</h3>
+                  <button
+                    type="button"
+                    className="ghost-button compact"
+                    onClick={() =>
+                      setCategoryModal((current) => ({
+                        ...current,
+                        open: false,
+                      }))
+                    }>
+                    Close
+                  </button>
+                </div>
+
+                <form className="recipe-form" onSubmit={handleSaveCategory}>
+                  <label>
+                    <span>Name</span>
+                    <input
+                      ref={categoryNameInputRef}
+                      type="text"
+                      value={categoryModal.name}
+                      onChange={(event) =>
+                        setCategoryModal((current) => ({
+                          ...current,
+                          name: event.target.value,
+                        }))
+                      }
+                      placeholder="sauces"
+                      required
+                    />
+                  </label>
+
+                  <div className="modal-actions">
+                    <button type="submit" className="primary-button">
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      onClick={() =>
+                        setCategoryModal((current) => ({
+                          ...current,
+                          open: false,
+                        }))
+                      }>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

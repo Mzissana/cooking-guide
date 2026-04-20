@@ -46,6 +46,10 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 button,
 input,
 select,
@@ -116,6 +120,12 @@ a {
 
 .app-shell.page-recipes {
   max-width: 1120px;
+}
+
+@media (min-width: 720px) and (max-width: 1199px) {
+  .app-shell {
+    max-width: 920px;
+  }
 }
 
 .page-header {
@@ -299,6 +309,7 @@ a {
 .recipe-card-button:hover,
 .primary-button:hover,
 .ghost-button:hover,
+.video-link:hover,
 .status-pill:hover {
   transform: translateY(-1px);
 }
@@ -339,6 +350,7 @@ a {
 .favorite-button {
   padding: 8px 12px;
   border-radius: 999px;
+  text-wrap: nowrap;
 }
 
 .status-pill {
@@ -378,6 +390,15 @@ a {
 
 .status-pill.status-visual:active {
   transform: scale(0.98);
+}
+
+.status-pill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.status-pill:disabled:hover {
+  transform: none;
 }
 
 .status-indicator {
@@ -462,20 +483,105 @@ a {
   top: 50%;
   right: 30px;
   transform: translateY(-50%);
-  border: 0;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.1);
   z-index: 1;
   width: 42px;
   height: 42px;
   display: grid;
   place-items: center;
   font-size: 1.05rem;
+  color: rgba(27, 27, 27, 0.62);
+}
+
+.favorite-button.active {
+  color: var(--accent);
+}
+
+.ui-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.favorite-button .ui-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-button .ui-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.inline-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-icon .ui-icon {
+  flex: 0 0 auto;
 }
 
 .panel {
   border-radius: 26px;
   padding: 18px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100dvh;
+  padding: 16px;
+}
+
+.modal {
+  width: min(460px, 100%);
+  max-height: min(82vh, 720px);
+  overflow: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.modal-actions > button {
+  width: 100%;
+  border-radius: 999px;
+}
+
+.modal .recipe-form {
+  gap: 14px;
+}
+
+@media (max-width: 560px) {
+  .modal {
+    width: 100%;
+    max-height: 86vh;
+  }
+
+  .modal-actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 .filter-bar,
@@ -702,8 +808,8 @@ a {
   }
 
   .page-recipes .favorite-button {
-    top: 14px;
-    right: 14px;
+    top: 19px;
+    right: 19px;
     transform: none;
   }
 
@@ -741,6 +847,17 @@ a {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+}
+
+.recipe-row-emoji {
+  display: grid;
+  place-items: center;
+  color: rgba(27, 27, 27, 0.48);
+}
+
+.recipe-row-thumb .ui-icon {
+  width: 24px;
+  height: 24px;
 }
 
 .recipe-row-thumb img {
@@ -905,6 +1022,12 @@ a {
   width: 100%;
   height: 100%;
   font-size: 3rem;
+  color: rgba(27, 27, 27, 0.48);
+}
+
+.recipe-card-placeholder .ui-icon {
+  width: 56px;
+  height: 56px;
 }
 
 .recipe-card-placeholder.large {
@@ -946,6 +1069,33 @@ a {
   padding: 0;
 }
 
+.video-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  border-radius: 999px;
+  padding: 12px 16px;
+  border: 1px solid rgba(35, 73, 51, 0.22);
+
+  text-decoration: none;
+  font-weight: 600;
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.video-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(35, 73, 51, 0.18);
+}
+
+.video-link:hover {
+  outline: #111111;
+}
+
 .detail-hero,
 .detail-grid,
 .page-grid,
@@ -963,17 +1113,30 @@ a {
   gap: 14px;
 }
 
+.detail-sheet {
+  align-self: start;
+}
+
+.detail-right {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-width: 0;
+}
+
 .detail-image-hero {
   position: relative;
   border-radius: 28px;
   overflow: hidden;
   box-shadow: var(--shadow);
   background: rgba(17, 17, 17, 0.06);
+  height: clamp(200px, 30vh, 360px);
+  align-self: start;
 }
 
 .detail-image-hero .detail-image {
   width: 100%;
-  height: 280px;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
@@ -1004,9 +1167,10 @@ a {
 
 .detail-metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
   margin-top: 14px;
+  margin-bottom: 14px;
 }
 
 .metric-card {
@@ -1032,6 +1196,7 @@ a {
   grid-template-columns: 1fr;
   gap: 10px;
   margin-top: 14px;
+  margin-bottom: 10px;
 }
 
 .detail-sheet .detail-actions button {
@@ -1144,7 +1309,7 @@ a {
   background: rgba(255, 255, 255, 0.98);
   display: inline-block;
   flex: 0 0 auto;
-  margin: 0;
+  margin: 3px;
   transition:
     transform 0.18s ease,
     background-color 0.18s ease;
@@ -1351,6 +1516,12 @@ a {
   color: var(--text-soft);
 }
 
+.stack-list-add {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .simple-mode .hero-stats,
 .recipe-card.simple .recipe-card-image-wrap {
   display: none;
@@ -1380,6 +1551,54 @@ a {
 
   .nav-cta {
     margin-left: 0;
+  }
+}
+
+@media (min-width: 720px) and (max-width: 1199px) {
+  .page-ingredients .page-grid,
+  .page-shopping .page-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+
+  .page-ingredients .page-grid > .panel,
+  .page-shopping .page-grid > .panel {
+    height: 100%;
+  }
+}
+
+@media (min-width: 980px) {
+  .detail-screen {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    align-items: start;
+    grid-template-areas:
+      "image right"
+      "steps right";
+  }
+
+  .detail-image-hero {
+    grid-area: image;
+  }
+
+  .detail-right {
+    grid-area: right;
+  }
+
+  .detail-steps {
+    grid-area: steps;
+  }
+}
+
+@media (min-width: 1200px) {
+  .page-ingredients .page-grid,
+  .page-shopping .page-grid {
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: stretch;
+  }
+
+  .page-ingredients .page-grid > .panel,
+  .page-shopping .page-grid > .panel {
+    height: 100%;
   }
 }
 
